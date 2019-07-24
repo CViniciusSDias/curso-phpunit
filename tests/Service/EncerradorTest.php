@@ -7,35 +7,6 @@ use Alura\Leilao\Model\Leilao;
 use Alura\Leilao\Service\Encerrador;
 use PHPUnit\Framework\TestCase;
 
-class LeilaoDaoMock extends LeilaoDao
-{
-    private $leiloes = [];
-
-    public function salva(Leilao $leilao): void
-    {
-        $this->leiloes[] = $leilao;
-    }
-
-    public function recuperarFinalizados(): array
-    {
-        return array_filter($this->leiloes, function (Leilao $leilao) {
-            return $leilao->estaFinalizado();
-        });
-    }
-
-    public function recuperarNaoFinalizados(): array
-    {
-        return array_filter($this->leiloes, function (Leilao $leilao) {
-            return !$leilao->estaFinalizado();
-        });
-    }
-
-    public function atualiza(Leilao $leilao)
-    {
-        return;
-    }
-}
-
 class EncerradorTest extends TestCase
 {
     public function testDeveEncerrarLeiloesComMaisDeUmaSemana()
@@ -43,9 +14,15 @@ class EncerradorTest extends TestCase
         $leilaoFiat = new Leilao('Fiat 147 0Km', new \DateTimeImmutable('8 days ago'));
         $leilaoVariante = new Leilao('Variante 0Km', new \DateTimeImmutable('10 days ago'));
 
-        $leilaoDao = new LeilaoDaoMock();
-        $leilaoDao->salva($leilaoFiat);
-        $leilaoDao->salva($leilaoVariante);
+        $leilaoDao = $this->getMockBuilder(LeilaoDao::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $leilaoDao->method('recuperarFinalizados')
+            ->willReturn([$leilaoFiat, $leilaoVariante]);
+
+        $leilaoDao->expects(self::once())
+            ->method('recuperarNaoFinalizados')
+            ->willReturn([$leilaoFiat, $leilaoVariante]);
 
         $encerrador = new Encerrador($leilaoDao);
         $encerrador->encerra();
