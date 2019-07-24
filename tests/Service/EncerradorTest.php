@@ -24,6 +24,10 @@ class EncerradorTest extends TestCase
             ->method('recuperarNaoFinalizados')
             ->willReturn([$leilaoFiat, $leilaoVariante]);
 
+        $leilaoDao->expects(self::exactly(2))
+            ->method('atualiza')
+            ->withConsecutive($leilaoFiat, $leilaoVariante);
+
         $encerrador = new Encerrador($leilaoDao);
         $encerrador->encerra();
 
