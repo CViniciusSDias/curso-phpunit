@@ -4,6 +4,10 @@
             "Alura\\Leilao\\": "src/"
         }
     },
+    "require": {
+        "php": ">7.3",
+        "ext-pdo": "*"
+    },
     "require-dev": {
         "phpunit/phpunit": "^8.1"
     }
