@@ -10,10 +10,15 @@ class Encerrador
      * @var LeilaoDao
      */
     private $dao;
+    /**
+     * @var EnviadorDeEmail
+     */
+    private $enviadorDeEmail;
 
-    public function __construct(LeilaoDao $dao)
+    public function __construct(LeilaoDao $dao, EnviadorDeEmail $enviadorDeEmail)
     {
         $this->dao = $dao;
+        $this->enviadorDeEmail = $enviadorDeEmail;
     }
 
     public function encerra()
@@ -22,8 +27,13 @@ class Encerrador
 
         foreach ($leiloes as $leilao) {
             if ($leilao->temMaisDeUmaSemana()) {
-                $leilao->finaliza();
-                $this->dao->atualiza($leilao);
+                try {
+                    $leilao->finaliza();
+                    $this->dao->atualiza($leilao);
+                    $this->enviadorDeEmail->notificaTerminoLeilao($leilao);
+                } catch (\DomainException $e) {
+                    error_log($e->getMessage());
+                }
             }
         }
     }
