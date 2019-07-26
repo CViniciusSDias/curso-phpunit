@@ -59,4 +59,17 @@ class EncerradorTest extends TestCase
         $encerrador = new Encerrador($this->leilaoDao, $this->enviadorDeEmailMock);
         $encerrador->encerra();
     }
+
+    public function testDeveEncerrarLeilaoAntesDeEnviarPorEmail()
+    {
+        $this->enviadorDeEmailMock
+            ->expects(self::exactly(2))
+            ->method('notificaTerminoLeilao')
+            ->willReturnCallback(function (Leilao $leilao) {
+                self::assertTrue($leilao->estaFinalizado());
+            });
+
+        $encerrador = new Encerrador($this->leilaoDao, $this->enviadorDeEmailMock);
+        $encerrador->encerra();
+    }
 }
